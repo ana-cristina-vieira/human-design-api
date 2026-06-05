@@ -11,7 +11,7 @@ from typing import List, Set, Tuple, Dict, Any
 # The HD gate wheel starts at 3.5° tropical Aries (not 0°).
 # Verified empirically: gives Profile 1/3 for Jun 14 1983 Portimão and
 # Profile 5/1 for May 8 1982 Santarém (reference chart).
-GATE_OFFSET = -1.645  # degrees; empirically verified: fixes Venus gate + Sun line
+GATE_OFFSET = -1.75  # degrees; verified against 3 charts (PT, MZ, PT-PM)
 
 from .hd_data import (
     GATE_SEQUENCE, DEGREES_PER_GATE, DEGREES_PER_LINE,
