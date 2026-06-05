@@ -98,6 +98,14 @@ def _fmt_dt(dt: datetime) -> str:
     return (f"{dt.day}{suffix} {months[dt.month-1]} {dt.year} "
             f"@ {dt.hour:02d}:{dt.minute:02d}")
 
+def _fmt_local(year: int, month: int, day: int, hour: int, minute: int) -> str:
+    """Format birth time using the user's LOCAL input (not UTC)."""
+    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    suffix = {1:"st", 2:"nd", 3:"rd"}.get(day % 10
+              if day not in (11, 12, 13) else 0, "th")
+    return f"{day}{suffix} {months[month-1]} {year} @ {hour:02d}:{minute:02d}"
+
 
 async def _send_to_n8n(payload: dict) -> None:
     """Fire-and-forget webhook to n8n."""
@@ -174,7 +182,8 @@ async def calculate(req: ChartRequest):
         name=req.name,
         email=req.email,
         birth_place=place_display,
-        birth_date_label=_fmt_dt(birth_utc),
+        birth_date_label=_fmt_local(req.birth_year, req.birth_month, req.birth_day,
+                                    req.birth_hour, req.birth_minute),
         design_date_label=_fmt_dt(chart.design_dt_utc),
 
         hd_type=chart.hd_type,
