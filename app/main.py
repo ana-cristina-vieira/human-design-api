@@ -85,6 +85,13 @@ class ChartResponse(BaseModel):
 
     body_graph_svg:   str          # inline SVG string
 
+    # Variables
+    digestion:   str
+    cognition:   str
+    motivation:  str
+    perspective: str
+    environment: str
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -205,4 +212,9 @@ async def calculate(req: ChartRequest):
         defined_channels=[f"{g1}-{g2}" for g1, g2 in sorted(chart.defined_channels)],
         active_gates=sorted(chart.all_active_gates),
         body_graph_svg=svg,
+        digestion=chart.digestion,
+        cognition=chart.cognition,
+        motivation=chart.motivation,
+        perspective=chart.perspective,
+        environment=chart.environment,
     )

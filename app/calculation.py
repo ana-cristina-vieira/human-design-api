@@ -15,9 +15,11 @@ GATE_OFFSET = -1.75  # degrees; verified against 3 charts (PT, MZ, PT-PM)
 
 from .hd_data import (
     GATE_SEQUENCE, DEGREES_PER_GATE, DEGREES_PER_LINE,
+    DEGREES_PER_COLOR, DEGREES_PER_TONE,
     CHANNELS, CENTERS, GATE_TO_CENTER, CHANNEL_TO_CENTERS,
     PLANET_ORDER, TYPE_META, CROSS_TYPE_BY_PROFILE, AUTHORITY_ORDER,
     get_cross_name, TYPE_PT, DEFINITION_PT,
+    DIGESTION_PT, COGNITION_PT, MOTIVATION_PT, PERSPECTIVE_PT, ENVIRONMENT_PT,
 )
 
 # Use Moshier analytical ephemeris (no external files, accurate within ~1 arcsec)
@@ -62,6 +64,13 @@ class ChartResult:
 
     connected_components: List[Set[str]]
 
+    # Variables
+    digestion:   str
+    cognition:   str
+    motivation:  str
+    perspective: str
+    environment: str
+
 
 # ---------------------------------------------------------------------------
 # Core conversion helpers
@@ -76,6 +85,19 @@ def degree_to_gate_line(longitude: float) -> Tuple[int, int]:
     line = int(position_in_gate / DEGREES_PER_LINE) + 1
     line = min(line, 6)
     return gate, line
+
+
+def _color_tone(longitude: float) -> Tuple[int, int]:
+    """Return (color 1-6, tone 1-6) sub-divisions within a gate line."""
+    lon = (longitude - GATE_OFFSET) % 360
+    index = int(lon / DEGREES_PER_GATE)
+    pos_gate  = lon - index * DEGREES_PER_GATE
+    line      = min(int(pos_gate / DEGREES_PER_LINE) + 1, 6)
+    pos_line  = pos_gate - (line - 1) * DEGREES_PER_LINE
+    color     = min(int(pos_line  / DEGREES_PER_COLOR) + 1, 6)
+    pos_color = pos_line - (color - 1) * DEGREES_PER_COLOR
+    tone      = min(int(pos_color / DEGREES_PER_TONE)  + 1, 6)
+    return color, tone
 
 
 def _calc_planet(jd: float, planet_id: int) -> float:
@@ -314,6 +336,24 @@ def calculate_chart(
     definition_en = _definition_label(len(components)) if components else "No Definition"
     definition    = DEFINITION_PT.get(definition_en, definition_en)
 
+    # ── Variables ─────────────────────────────────────────────────────────
+    d_sun_lon  = design_lons["sun"]
+    d_earth_lon= design_lons["earth"]
+    p_sun_lon  = pers_lons["sun"]
+    p_earth_lon= pers_lons["earth"]
+
+    _, d_sun_tone   = _color_tone(d_sun_lon)
+    d_sun_color, _  = _color_tone(d_sun_lon)
+    p_sun_color, _  = _color_tone(p_sun_lon)
+    p_earth_color,_ = _color_tone(p_earth_lon)
+    _, d_earth_tone = _color_tone(d_earth_lon)
+
+    digestion   = DIGESTION_PT.get(d_sun_tone,   "—")
+    cognition   = COGNITION_PT.get(d_sun_color,  "—")
+    motivation  = MOTIVATION_PT.get(p_sun_color, "—")
+    perspective = PERSPECTIVE_PT.get(p_earth_color, "—")
+    environment = ENVIRONMENT_PT.get(d_earth_tone,  "—")
+
     return ChartResult(
         name=name,
         birth_dt_utc=birth_dt_utc,
@@ -335,4 +375,9 @@ def calculate_chart(
         definition=definition,
         incarnation_cross=incarnation_cross,
         connected_components=components,
+        digestion=digestion,
+        cognition=cognition,
+        motivation=motivation,
+        perspective=perspective,
+        environment=environment,
     )

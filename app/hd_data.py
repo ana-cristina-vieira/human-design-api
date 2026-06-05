@@ -19,8 +19,10 @@ GATE_SEQUENCE = [
     37, 63, 22, 36,           # Pisces  (337.5° – 360°)
 ]
 
-DEGREES_PER_GATE = 360.0 / 64  # 5.625°
-DEGREES_PER_LINE = DEGREES_PER_GATE / 6  # 0.9375°
+DEGREES_PER_GATE  = 360.0 / 64        # 5.625°
+DEGREES_PER_LINE  = DEGREES_PER_GATE / 6   # 0.9375°
+DEGREES_PER_COLOR = DEGREES_PER_LINE / 6   # 0.15625°
+DEGREES_PER_TONE  = DEGREES_PER_COLOR / 6  # ~0.026042°
 
 # The 36 channels as (gate_a, gate_b) pairs (always lower number first).
 # Source: verified list including the 6 integration circuit channels.
@@ -102,6 +104,24 @@ TYPE_META = {
         "not_self_theme": "Desapontamento",
     },
 }
+
+# ── Variables (Determinação, Cognição, Motivação, Perspectiva, Ambiente) ────
+# Each derived from Color (1-6) or Tone (1-6) of specific planetary positions.
+# Design Sun  → Digestão (Tone) + Sentido de Design (Color)
+# Personality Sun   → Motivação (Color)
+# Personality Earth → Perspectiva (Color)
+# Design Earth      → Ambiente (Tone)
+
+DIGESTION_PT   = {1:"Consecutiva", 2:"Seletiva", 3:"Aberta",
+                  4:"Paladar Fechado", 5:"Direto", 6:"Indireto"}
+COGNITION_PT   = {1:"Olfato", 2:"Visão Exterior", 3:"Visão Interior",
+                  4:"Paladar", 5:"Audição", 6:"Toque"}
+MOTIVATION_PT  = {1:"Medo", 2:"Esperança", 3:"Desejo",
+                  4:"Necessidade", 5:"Culpa", 6:"Inocência"}
+PERSPECTIVE_PT = {1:"Querer", 2:"Desejo/Vontade", 3:"Sobrevivência",
+                  4:"Poder", 5:"Natureza", 6:"Determinação"}
+ENVIRONMENT_PT = {1:"Cavernas", 2:"Mercados", 3:"Vales",
+                  4:"Costas", 5:"Montanhas", 6:"Florestas"}
 
 # English → Portuguese type name mapping (for type determination)
 TYPE_PT = {
