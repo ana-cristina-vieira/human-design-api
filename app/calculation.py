@@ -8,6 +8,11 @@ from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from typing import List, Set, Tuple, Dict, Any
 
+# The HD gate wheel starts at 3.5° tropical Aries (not 0°).
+# Verified empirically: gives Profile 1/3 for Jun 14 1983 Portimão and
+# Profile 5/1 for May 8 1982 Santarém (reference chart).
+GATE_OFFSET = 3.5  # degrees
+
 from .hd_data import (
     GATE_SEQUENCE, DEGREES_PER_GATE, DEGREES_PER_LINE,
     CHANNELS, CENTERS, GATE_TO_CENTER, CHANNEL_TO_CENTERS,
@@ -63,7 +68,7 @@ class ChartResult:
 
 def degree_to_gate_line(longitude: float) -> Tuple[int, int]:
     """Return (gate, line) for a tropical ecliptic longitude (0–360°)."""
-    lon = longitude % 360
+    lon = (longitude - GATE_OFFSET) % 360
     index = int(lon / DEGREES_PER_GATE)
     gate = GATE_SEQUENCE[index]
     position_in_gate = lon - index * DEGREES_PER_GATE
