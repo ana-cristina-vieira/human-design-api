@@ -498,7 +498,7 @@
   <div class="chart-wrapper">
     <!-- Design planets (left) -->
     <div class="planets-col" id="designCol">
-      <h3>Design</h3>
+      <h3>Design (Inconsciente)</h3>
       <div id="designPlanets"></div>
     </div>
 
@@ -509,7 +509,7 @@
 
     <!-- Personality planets (right) -->
     <div class="planets-col" id="personalityCol">
-      <h3>Personality</h3>
+      <h3>Personalidade (Consciente)</h3>
       <div id="personalityPlanets"></div>
     </div>
 
@@ -598,16 +598,16 @@ function renderResult(d) {
 
   // Data table
   const rows = [
-    ['Type',            d.hd_type,            true],
-    ['Strategy',        d.strategy,           true],
-    ['Inner Authority', d.authority,          true],
-    ['Profile',         d.profile,            true],
-    ['Definition',      d.definition,         false],
-    ['Incarnation Cross', d.incarnation_cross, false],
-    ['Signature',       d.signature,          false],
-    ['Not-Self Theme',  d.not_self_theme,      false],
-    ['Active Gates',    d.active_gates.join(', '), false],
-    ['Defined Channels', d.defined_channels.join(' · ') || '—', false],
+    ['Tipo Aúrico',        d.hd_type,            true],
+    ['Estratégia',         d.strategy,           true],
+    ['Autoridade Interna', d.authority,          true],
+    ['Perfil',             d.profile,            true],
+    ['Definição',          d.definition,         false],
+    ['Cruz de Encarnação', d.incarnation_cross,  false],
+    ['Assinatura',         d.signature,          false],
+    ['Tema do Não-Ser',    d.not_self_theme,      false],
+    ['Gates Activos',      d.active_gates.join(', '), false],
+    ['Canais Definidos',   d.defined_channels.join(' · ') || '—', false],
   ];
 
   $('dataTable').innerHTML = rows.map(([k, v, hl]) =>

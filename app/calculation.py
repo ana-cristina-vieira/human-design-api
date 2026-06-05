@@ -17,6 +17,7 @@ from .hd_data import (
     GATE_SEQUENCE, DEGREES_PER_GATE, DEGREES_PER_LINE,
     CHANNELS, CENTERS, GATE_TO_CENTER, CHANNEL_TO_CENTERS,
     PLANET_ORDER, TYPE_META, CROSS_TYPE_BY_PROFILE, AUTHORITY_ORDER,
+    get_cross_name, TYPE_PT, DEFINITION_PT,
 )
 
 # Use Moshier analytical ephemeris (no external files, accurate within ~1 arcsec)
@@ -282,8 +283,9 @@ def calculate_chart(
     defined_centers  = _find_defined_centers(defined_channels)
     components       = _connected_components(defined_centers, defined_channels)
 
-    hd_type   = _determine_type(defined_centers, components)
-    authority = _determine_authority(defined_centers)
+    hd_type_en = _determine_type(defined_centers, components)
+    hd_type    = TYPE_PT.get(hd_type_en, hd_type_en)
+    authority  = _determine_authority(defined_centers)
 
     meta = TYPE_META.get(hd_type, {})
 
@@ -298,11 +300,19 @@ def calculate_chart(
     d_sun_gate   = next(p.gate for p in design      if p.key == "sun")
     d_earth_gate = next(p.gate for p in design      if p.key == "earth")
     cross_type   = CROSS_TYPE_BY_PROFILE.get(profile, "Cross")
-    incarnation_cross = (
-        f"{cross_type} ({p_sun_gate}/{p_earth_gate} | {d_sun_gate}/{d_earth_gate})"
-    )
+    cross_base   = get_cross_name(p_sun_gate, d_sun_gate, profile)
+    if cross_base:
+        incarnation_cross = (
+            f"{cross_type} of {cross_base} "
+            f"({p_sun_gate}/{p_earth_gate} | {d_sun_gate}/{d_earth_gate})"
+        )
+    else:
+        incarnation_cross = (
+            f"{cross_type} ({p_sun_gate}/{p_earth_gate} | {d_sun_gate}/{d_earth_gate})"
+        )
 
-    definition = _definition_label(len(components)) if components else "No Definition"
+    definition_en = _definition_label(len(components)) if components else "No Definition"
+    definition    = DEFINITION_PT.get(definition_en, definition_en)
 
     return ChartResult(
         name=name,
