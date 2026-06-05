@@ -218,7 +218,7 @@ def _determine_type(
         defined_centers, components
     )
 
-    if sacral_defined and sacral_to_throat:
+    if sacral_defined and (sacral_to_throat or other_motor_to_throat):
         return "Manifesting Generator"
     if sacral_defined:
         return "Generator"
