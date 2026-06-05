@@ -114,7 +114,7 @@ TYPE_META = {
 
 DIGESTION_PT   = {1:"Consecutiva", 2:"Seletiva", 3:"Aberta",
                   4:"Paladar Fechado", 5:"Direto", 6:"Indireto"}
-COGNITION_PT   = {1:"Olfato", 2:"Visão Exterior", 3:"Visão Interior",
+COGNITION_PT   = {1:"Olfato", 2:"Visão Interior", 3:"Visão Exterior",
                   4:"Paladar", 5:"Audição", 6:"Toque"}
 MOTIVATION_PT  = {1:"Medo", 2:"Esperança", 3:"Desejo",
                   4:"Necessidade", 5:"Culpa", 6:"Inocência"}
