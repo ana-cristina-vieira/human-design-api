@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  human-design-api:
+    build: .
+    container_name: human-design-api
+    restart: always
+    # host network: container shares the VPS network directly
+    # so localhost:5678 reaches n8n, and the API runs on VPS port 8000
+    network_mode: host
+    env_file:
+      - .env

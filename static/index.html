@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>O Teu Mapa de Human Design — Negócios com ALMA</title>
+<!-- Brand fonts: Cormorant Garamond ≈ The Seasons | DM Sans ≈ Garet -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  /* ── Reset & base ─────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --creme:       #FDFAF6;
+    --creme-soft:  #F5F1EA;
+    --creme-mid:   #EDE4D8;
+    --bege:        #D4C4B0;
+    --terracota:   #B2967D;
+    --castanho:    #7D5A44;
+    --dark:        #4A342A;
+    --espresso:    #1E1612;
+    --serif:       'Cormorant Garamond', Georgia, serif;
+    --sans:        'DM Sans', system-ui, sans-serif;
+  }
+
+  html { font-size: 16px; scroll-behavior: smooth; }
+
+  body {
+    background: var(--creme);
+    color: var(--espresso);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Page header ───────────────────────────────────────────────── */
+  .page-header {
+    background: var(--creme);
+    border-bottom: 1px solid var(--creme-mid);
+    padding: 28px 24px 22px;
+    text-align: center;
+  }
+  .page-header .brand {
+    font-family: var(--serif);
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--terracota);
+    margin-bottom: 10px;
+  }
+  .page-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(26px, 5vw, 44px);
+    font-weight: 500;
+    color: var(--dark);
+    line-height: 1.2;
+  }
+  .page-header p {
+    margin-top: 10px;
+    font-size: 15px;
+    color: var(--castanho);
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ── Form section ──────────────────────────────────────────────── */
+  .form-section {
+    max-width: 680px;
+    margin: 48px auto;
+    padding: 0 20px;
+  }
+
+  .form-card {
+    background: var(--creme-soft);
+    border: 1px solid var(--creme-mid);
+    border-radius: 2px;
+    padding: 40px 44px;
+  }
+
+  .form-card h2 {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--dark);
+    margin-bottom: 6px;
+  }
+  .form-card .subtitle {
+    font-size: 14px;
+    color: var(--castanho);
+    margin-bottom: 32px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 24px;
+  }
+  .form-grid .full { grid-column: 1 / -1; }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--castanho);
+    margin-bottom: 7px;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 11px 14px;
+    background: var(--creme);
+    border: 1px solid var(--bege);
+    border-radius: 2px;
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--espresso);
+    outline: none;
+    transition: border-color .2s;
+  }
+  input:focus, select:focus { border-color: var(--terracota); }
+
+  .time-row { display: flex; gap: 12px; }
+  .time-row > * { flex: 1; }
+
+  .privacy-note {
+    margin-top: 18px;
+    font-size: 12px;
+    color: var(--terracota);
+    text-align: center;
+  }
+
+  .btn-primary {
+    margin-top: 28px;
+    width: 100%;
+    padding: 16px;
+    background: var(--castanho);
+    color: var(--creme);
+    border: none;
+    border-radius: 2px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .2s, opacity .2s;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--dark); }
+  .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+
+  .error-msg {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #fff0ee;
+    border-left: 3px solid #c0665a;
+    border-radius: 2px;
+    font-size: 14px;
+    color: #8b3a30;
+    display: none;
+  }
+
+  /* ── Loading ───────────────────────────────────────────────────── */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .loading .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--creme-mid);
+    border-top-color: var(--terracota);
+    border-radius: 50%;
+    animation: spin .9s linear infinite;
+    margin: 0 auto 20px;
+  }
+  .loading p { font-family: var(--serif); font-size: 18px; color: var(--castanho); font-style: italic; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Result section ────────────────────────────────────────────── */
+  .result-section { display: none; padding: 0 20px 60px; }
+
+  .result-header {
+    max-width: 1100px;
+    margin: 48px auto 32px;
+    text-align: center;
+    border-bottom: 1px solid var(--creme-mid);
+    padding-bottom: 28px;
+  }
+  .result-header .name {
+    font-family: var(--serif);
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 500;
+    color: var(--dark);
+  }
+  .result-header .birth-info {
+    margin-top: 6px;
+    font-size: 14px;
+    color: var(--castanho);
+    letter-spacing: .5px;
+  }
+
+  /* ── Chart layout ──────────────────────────────────────────────── */
+  .chart-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 160px 1fr 160px 340px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* Planet columns */
+  .planets-col {
+    padding-top: 8px;
+  }
+  .planets-col h3 {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--terracota);
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .planet-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--creme-mid);
+    font-size: 13px;
+  }
+  .planet-symbol {
+    width: 18px;
+    text-align: center;
+    font-size: 15px;
+    color: var(--castanho);
+  }
+  .planet-gate {
+    font-weight: 500;
+    color: var(--dark);
+    min-width: 28px;
+  }
+  .planet-line {
+    font-size: 11px;
+    color: var(--terracota);
+  }
+
+  /* Body graph center */
+  .bodygraph-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .bodygraph-col svg {
+    max-width: 100%;
+    height: auto;
+    border-radius: 2px;
+  }
+
+  /* Data table */
+  .data-col {}
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table tr { border-bottom: 1px solid var(--creme-mid); }
+  .data-table td {
+    padding: 9px 4px;
+    font-size: 13.5px;
+    vertical-align: top;
+  }
+  .data-table td:first-child {
+    font-weight: 500;
+    color: var(--espresso);
+    white-space: nowrap;
+    padding-right: 14px;
+    width: 48%;
+  }
+  .data-table td:last-child { color: var(--castanho); }
+  .data-table .highlight td:last-child {
+    font-family: var(--serif);
+    font-size: 15px;
+    color: var(--terracota);
+    font-weight: 500;
+  }
+
+  .gates-list {
+    font-size: 12px;
+    color: var(--castanho);
+    line-height: 1.8;
+  }
+  .channels-list {
+    font-size: 12px;
+    color: var(--castanho);
+    line-height: 1.8;
+  }
+
+  /* ── CTA block ─────────────────────────────────────────────────── */
+  .cta-block {
+    max-width: 680px;
+    margin: 48px auto 0;
+    background: var(--creme-soft);
+    border: 1px solid var(--creme-mid);
+    border-radius: 2px;
+    padding: 44px 48px;
+    text-align: center;
+  }
+  .cta-block .label {
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--terracota);
+    margin-bottom: 12px;
+  }
+  .cta-block h2 {
+    font-family: var(--serif);
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 500;
+    color: var(--dark);
+    line-height: 1.3;
+    margin-bottom: 14px;
+  }
+  .cta-block p {
+    font-size: 15px;
+    color: var(--castanho);
+    max-width: 440px;
+    margin: 0 auto 28px;
+    line-height: 1.7;
+  }
+  .btn-cta {
+    display: inline-block;
+    padding: 16px 36px;
+    background: var(--castanho);
+    color: var(--creme);
+    text-decoration: none;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-radius: 2px;
+    transition: background .2s;
+  }
+  .btn-cta:hover { background: var(--dark); }
+
+  /* ── Responsive ────────────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .chart-wrapper {
+      grid-template-columns: 1fr;
+    }
+    .planets-col { display: none; }  /* hide on mobile for clarity */
+    .cta-block { padding: 32px 24px; }
+  }
+  @media (max-width: 560px) {
+    .form-card { padding: 28px 20px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid .full { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- PAGE HEADER -->
+<header class="page-header">
+  <div class="brand">Negócios com ALMA · Ana Vieira</div>
+  <h1>O Teu Mapa de Human Design</h1>
+  <p>Descobre o teu tipo energético, autoridade e perfil de vida. Gratuito e instantâneo.</p>
+</header>
+
+<!-- FORM -->
+<section class="form-section" id="formSection">
+  <div class="form-card">
+    <h2>Gera o teu mapa</h2>
+    <p class="subtitle">Preenche os teus dados de nascimento para calculares o teu mapa personalizado.</p>
+
+    <form id="hdForm" novalidate>
+      <div class="form-grid">
+        <div class="full">
+          <label for="name">Nome completo</label>
+          <input type="text" id="name" name="name" placeholder="O teu nome" required/>
+        </div>
+        <div class="full">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="o.teu@email.com" required/>
+        </div>
+        <div>
+          <label for="birth_year">Ano de nascimento</label>
+          <input type="number" id="birth_year" name="birth_year" min="1900" max="2025" placeholder="1990" required/>
+        </div>
+        <div>
+          <label for="birth_month">Mês</label>
+          <select id="birth_month" name="birth_month" required>
+            <option value="">— Selecciona —</option>
+            <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+            <option value="3">Março</option><option value="4">Abril</option>
+            <option value="5">Maio</option><option value="6">Junho</option>
+            <option value="7">Julho</option><option value="8">Agosto</option>
+            <option value="9">Setembro</option><option value="10">Outubro</option>
+            <option value="11">Novembro</option><option value="12">Dezembro</option>
+          </select>
+        </div>
+        <div>
+          <label for="birth_day">Dia</label>
+          <input type="number" id="birth_day" name="birth_day" min="1" max="31" placeholder="1" required/>
+        </div>
+        <div>
+          <label>Hora de nascimento</label>
+          <div class="time-row">
+            <input type="number" id="birth_hour"   name="birth_hour"   min="0" max="23" placeholder="HH" required/>
+            <input type="number" id="birth_minute" name="birth_minute" min="0" max="59" placeholder="MM" required/>
+          </div>
+        </div>
+        <div class="full">
+          <label for="birth_place">Local de nascimento</label>
+          <input type="text" id="birth_place" name="birth_place"
+                 placeholder="ex: Lisboa, Portugal" required/>
+        </div>
+      </div>
+
+      <p class="privacy-note">🔒 Os teus dados são usados apenas para calcular o mapa. Não são partilhados.</p>
+      <button type="submit" class="btn-primary" id="submitBtn">
+        Calcular o meu mapa
+      </button>
+      <div class="error-msg" id="errorMsg"></div>
+    </form>
+  </div>
+</section>
+
+<!-- LOADING -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <p>A calcular o teu mapa...</p>
+</div>
+
+<!-- RESULT -->
+<section class="result-section" id="resultSection">
+
+  <div class="result-header">
+    <div class="name" id="resName"></div>
+    <div class="birth-info" id="resBirthInfo"></div>
+  </div>
+
+  <div class="chart-wrapper">
+    <!-- Design planets (left) -->
+    <div class="planets-col" id="designCol">
+      <h3>Design</h3>
+      <div id="designPlanets"></div>
+    </div>
+
+    <!-- Body Graph SVG -->
+    <div class="bodygraph-col">
+      <div id="bodygraphSvg"></div>
+    </div>
+
+    <!-- Personality planets (right) -->
+    <div class="planets-col" id="personalityCol">
+      <h3>Personality</h3>
+      <div id="personalityPlanets"></div>
+    </div>
+
+    <!-- Data table -->
+    <div class="data-col">
+      <table class="data-table" id="dataTable"></table>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-block">
+    <p class="label">Próximo passo</p>
+    <h2>O que significa este mapa para ti?</h2>
+    <p>O Mapa de Alinhamento Pessoal interpreta cada elemento do teu Human Design e cruza-o com as tuas rotinas, negócio e comportamentos — para viveres e trabalhares de acordo com a tua natureza.</p>
+    <a href="#" class="btn-cta" id="ctaBtn">Quero o meu Mapa de Alinhamento</a>
+  </div>
+
+</section>
+
+<script>
+const API = '';  // empty = same origin; or set to 'https://your-vps-domain.com'
+
+const $ = id => document.getElementById(id);
+const form = $('hdForm');
+
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  $('errorMsg').style.display = 'none';
+
+  const btn = $('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'A calcular...';
+  $('formSection').style.display  = 'none';
+  $('loading').style.display      = 'block';
+
+  const body = {
+    name:         $('name').value.trim(),
+    email:        $('email').value.trim(),
+    birth_year:   parseInt($('birth_year').value),
+    birth_month:  parseInt($('birth_month').value),
+    birth_day:    parseInt($('birth_day').value),
+    birth_hour:   parseInt($('birth_hour').value),
+    birth_minute: parseInt($('birth_minute').value),
+    birth_place:  $('birth_place').value.trim(),
+  };
+
+  try {
+    const res  = await fetch(`${API}/calculate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Erro desconhecido.');
+    }
+
+    const data = await res.json();
+    $('loading').style.display       = 'none';
+    $('resultSection').style.display = 'block';
+    renderResult(data);
+
+  } catch (err) {
+    $('loading').style.display      = 'none';
+    $('formSection').style.display  = 'block';
+    $('errorMsg').style.display     = 'block';
+    $('errorMsg').textContent       = `Erro: ${err.message}`;
+    btn.disabled   = false;
+    btn.textContent = 'Calcular o meu mapa';
+  }
+});
+
+function renderResult(d) {
+  // Header
+  $('resName').textContent    = d.name;
+  $('resBirthInfo').innerHTML =
+    `Nascimento: <strong>${d.birth_date_label}</strong> · ${d.birth_place} &nbsp;|&nbsp; Data de Design: <strong>${d.design_date_label}</strong>`;
+
+  // SVG
+  $('bodygraphSvg').innerHTML = d.body_graph_svg;
+
+  // Planet columns
+  $('personalityPlanets').innerHTML = renderPlanets(d.personality);
+  $('designPlanets').innerHTML      = renderPlanets(d.design);
+
+  // Data table
+  const rows = [
+    ['Type',            d.hd_type,            true],
+    ['Strategy',        d.strategy,           true],
+    ['Inner Authority', d.authority,          true],
+    ['Profile',         d.profile,            true],
+    ['Definition',      d.definition,         false],
+    ['Incarnation Cross', d.incarnation_cross, false],
+    ['Signature',       d.signature,          false],
+    ['Not-Self Theme',  d.not_self_theme,      false],
+    ['Active Gates',    d.active_gates.join(', '), false],
+    ['Defined Channels', d.defined_channels.join(' · ') || '—', false],
+  ];
+
+  $('dataTable').innerHTML = rows.map(([k, v, hl]) =>
+    `<tr${hl ? ' class="highlight"' : ''}>
+       <td>${k}</td><td>${v}</td>
+     </tr>`
+  ).join('');
+
+  // Scroll to result
+  $('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderPlanets(planets) {
+  return planets.map(p =>
+    `<div class="planet-row">
+       <span class="planet-symbol">${p.symbol}</span>
+       <span class="planet-gate">${p.gate}</span>
+       <span class="planet-line">.${p.line}</span>
+     </div>`
+  ).join('');
+}
+</script>
+</body>
+</html>
