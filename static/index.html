@@ -502,13 +502,17 @@
       <div id="designPlanets"></div>
     </div>
 
-    <!-- Body Graph SVG + arrows -->
-    <div class="bodygraph-col">
-      <div class="arrows-row" id="arrowsRow" style="display:flex;justify-content:space-between;align-items:flex-end;padding:0 8px 4px;font-family:var(--sans);font-size:12px;color:var(--castanho);">
-        <div id="designArrows" style="text-align:left;line-height:1.8;"></div>
-        <div id="personalityArrows" style="text-align:right;line-height:1.8;"></div>
-      </div>
+    <!-- Body Graph SVG + arrows flanking it -->
+    <div class="bodygraph-col" style="position:relative;">
       <div id="bodygraphSvg"></div>
+      <!-- Design arrows (left) -->
+      <div id="designArrows" style="position:absolute;top:12px;left:-40px;
+        text-align:right;font-family:var(--sans);font-size:13px;
+        font-weight:600;color:var(--castanho);line-height:2;"></div>
+      <!-- Personality arrows (right) -->
+      <div id="personalityArrows" style="position:absolute;top:12px;right:-40px;
+        text-align:left;font-family:var(--sans);font-size:13px;
+        font-weight:600;color:var(--castanho);line-height:2;"></div>
     </div>
 
     <!-- Personality planets (right) -->
@@ -624,16 +628,24 @@ function renderResult(d) {
      </tr>`
   ).join('');
 
-  // Profile arrows
-  // Direction: color 1-3 → arrow right (→ personal), color 4-6 → arrow left (← transpersonal)
-  function arrowDir(color) { return color <= 3 ? '→' : '←'; }
+  // Profile / Variable arrows
+  // Color 1-3 → right (→ personal), color 4-6 → left (← transpersonal)
+  function arrowCaret(color, side) {
+    const isPersonal = color <= 3;
+    if (side === 'left')  return isPersonal ? '›' : '‹';
+    return isPersonal ? '›' : '‹';
+  }
   function fmtArrow(arr, side) {
     const [line, color] = arr;
-    const dir = arrowDir(color);
-    const lc = `${line}<sub>${color}</sub>`;
-    return side === 'left'
-      ? `<span style="font-weight:500">${dir} ${lc}</span>`
-      : `<span style="font-weight:500">${lc} ${dir}</span>`;
+    const personal = color <= 3;
+    const caret = personal ? '›' : '‹';
+    if (side === 'left') {
+      // Design side: caret then number
+      return `${caret} ${line}<sub>${color}</sub>`;
+    } else {
+      // Personality side: number then caret
+      return `${line}<sub>${color}</sub> ${caret}`;
+    }
   }
   $('designArrows').innerHTML =
     fmtArrow(d.d_sun_arrow,   'left') + '<br>' +
