@@ -71,6 +71,12 @@ class ChartResult:
     perspective: str
     environment: str
 
+    # Profile arrows (line.color for each position)
+    p_sun_line_color:   Tuple[int, int]   # (line, color)
+    p_earth_line_color: Tuple[int, int]
+    d_sun_line_color:   Tuple[int, int]
+    d_earth_line_color: Tuple[int, int]
+
 
 # ---------------------------------------------------------------------------
 # Core conversion helpers
@@ -85,6 +91,17 @@ def degree_to_gate_line(longitude: float) -> Tuple[int, int]:
     line = int(position_in_gate / DEGREES_PER_LINE) + 1
     line = min(line, 6)
     return gate, line
+
+
+def _line_color(longitude: float) -> Tuple[int, int]:
+    """Return (line, color) for a planet position — used for profile arrows."""
+    gate, line = degree_to_gate_line(longitude)
+    lon = (longitude - GATE_OFFSET) % 360
+    index = int(lon / DEGREES_PER_GATE)
+    pos_gate  = lon - index * DEGREES_PER_GATE
+    pos_line  = pos_gate - (line - 1) * DEGREES_PER_LINE
+    color     = min(int(pos_line / DEGREES_PER_COLOR) + 1, 6)
+    return line, color
 
 
 def _color_tone(longitude: float) -> Tuple[int, int]:
@@ -380,4 +397,8 @@ def calculate_chart(
         motivation=motivation,
         perspective=perspective,
         environment=environment,
+        p_sun_line_color=_line_color(p_sun_lon),
+        p_earth_line_color=_line_color(p_earth_lon),
+        d_sun_line_color=_line_color(d_sun_lon),
+        d_earth_line_color=_line_color(d_earth_lon),
     )

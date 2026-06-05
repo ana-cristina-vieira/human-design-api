@@ -502,8 +502,12 @@
       <div id="designPlanets"></div>
     </div>
 
-    <!-- Body Graph SVG -->
+    <!-- Body Graph SVG + arrows -->
     <div class="bodygraph-col">
+      <div class="arrows-row" id="arrowsRow" style="display:flex;justify-content:space-between;align-items:flex-end;padding:0 8px 4px;font-family:var(--sans);font-size:12px;color:var(--castanho);">
+        <div id="designArrows" style="text-align:left;line-height:1.8;"></div>
+        <div id="personalityArrows" style="text-align:right;line-height:1.8;"></div>
+      </div>
       <div id="bodygraphSvg"></div>
     </div>
 
@@ -619,6 +623,24 @@ function renderResult(d) {
        <td>${k}</td><td>${v}</td>
      </tr>`
   ).join('');
+
+  // Profile arrows
+  // Direction: color 1-3 → arrow right (→ personal), color 4-6 → arrow left (← transpersonal)
+  function arrowDir(color) { return color <= 3 ? '→' : '←'; }
+  function fmtArrow(arr, side) {
+    const [line, color] = arr;
+    const dir = arrowDir(color);
+    const lc = `${line}<sub>${color}</sub>`;
+    return side === 'left'
+      ? `<span style="font-weight:500">${dir} ${lc}</span>`
+      : `<span style="font-weight:500">${lc} ${dir}</span>`;
+  }
+  $('designArrows').innerHTML =
+    fmtArrow(d.d_sun_arrow,   'left') + '<br>' +
+    fmtArrow(d.d_earth_arrow, 'left');
+  $('personalityArrows').innerHTML =
+    fmtArrow(d.p_sun_arrow,   'right') + '<br>' +
+    fmtArrow(d.p_earth_arrow, 'right');
 
   // Scroll to result
   $('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });

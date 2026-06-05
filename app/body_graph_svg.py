@@ -1,32 +1,31 @@
 """
-Generates a branded Body Graph SVG for Negócios com ALMA.
-Colors follow the brand palette: cremes, terracota, espresso.
+Body Graph SVG generator — Negócios com ALMA.
+Shows ALL 64 gates (activated = filled, inactive = outline).
+Brand palette: cremes, terracota, espresso.
 """
 
 from __future__ import annotations
 from typing import Set, List, Tuple, Dict
-from .hd_data import CENTERS, CHANNELS, CHANNEL_TO_CENTERS, GATE_TO_CENTER
+from collections import defaultdict
+from .hd_data import CENTERS, CHANNELS, GATE_TO_CENTER
 
-# ---------------------------------------------------------------------------
-# Brand colours
-# ---------------------------------------------------------------------------
-C_DEFINED_FILL   = "#B2967D"   # Terracota Suave — defined centers
-C_DEFINED_STROKE = "#7D5A44"   # Castanho Médio
-C_UNDEFINED_FILL = "#F5F1EA"   # Creme Suave
-C_UNDEF_STROKE   = "#D4C4B0"   # Bege Cálido
-C_CHANNEL_DEF    = "#7D5A44"   # Castanho Médio — defined channel
-C_CHANNEL_UNDEF  = "#EDE4D8"   # Creme Médio — background channel lines
-C_TEXT_DEF       = "#FDFAF6"   # Creme Puro on dark centers
-C_TEXT_UNDEF     = "#7D5A44"   # Castanho on light centers
-C_BG             = "#FDFAF6"
-C_BOTH_GATE      = "#4A342A"   # Castanho Escuro — gate activated by both
-C_PERS_GATE      = "#B2967D"   # Personality gate (conscious)
-C_DES_GATE       = "#7D5A44"   # Design gate (unconscious)
+# ── Brand colours ─────────────────────────────────────────────────────────────
+C_DEF_FILL    = "#B2967D"   # Terracota — defined center fill
+C_DEF_STROKE  = "#7D5A44"   # Castanho Médio
+C_UNDEF_FILL  = "#F5F1EA"   # Creme Suave — undefined center
+C_UNDEF_STR   = "#D4C4B0"   # Bege Cálido
+C_CHAN_DEF    = "#7D5A44"   # defined channel line
+C_CHAN_UNDEF  = "#EDE4D8"   # inactive channel line
 
-# ---------------------------------------------------------------------------
-# Center geometry  (shape_type, geometry_dict, visual_center)
-# ---------------------------------------------------------------------------
-# Visual center coordinates used for channel routing
+C_GATE_P      = "#B2967D"   # Personality gate (conscious)
+C_GATE_D      = "#7D5A44"   # Design gate (unconscious)
+C_GATE_BOTH   = "#4A342A"   # Both
+C_GATE_OFF    = "#F5F1EA"   # inactive gate fill
+C_GATE_OFF_TX = "#B2967D"   # inactive gate text
+C_GATE_ON_TX  = "#FDFAF6"   # active gate text
+C_BG          = "#FDFAF6"
+
+# ── Center visual positions ────────────────────────────────────────────────────
 CENTER_POS: Dict[str, Tuple[float, float]] = {
     "Head":         (200, 72),
     "Ajna":         (200, 148),
@@ -39,212 +38,192 @@ CENTER_POS: Dict[str, Tuple[float, float]] = {
     "Root":         (200, 474),
 }
 
-def _triangle_points(cx, cy, size, inverted=False) -> str:
-    if not inverted:
-        return f"{cx},{cy - size*0.7} {cx - size},{cy + size*0.3} {cx + size},{cy + size*0.3}"
-    else:
-        return f"{cx - size},{cy - size*0.3} {cx + size},{cy - size*0.3} {cx},{cy + size*0.7}"
-
-def _diamond_points(cx, cy, hw, hh) -> str:
-    return f"{cx},{cy-hh} {cx+hw},{cy} {cx},{cy+hh} {cx-hw},{cy}"
-
-# center_name → SVG shape element(s)
-def _center_shape(name: str, defined: bool) -> str:
-    fill   = C_DEFINED_FILL   if defined else C_UNDEFINED_FILL
-    stroke = C_DEFINED_STROKE if defined else C_UNDEF_STROKE
-    sw     = 2.5 if defined else 1.5
-    tc     = C_TEXT_DEF       if defined else C_TEXT_UNDEF
-    label  = name if name != "Solar Plexus" else "Sol.Plex."
-    cx, cy = CENTER_POS[name]
-
-    common = f'fill="{fill}" stroke="{stroke}" stroke-width="{sw}"'
-
-    if name == "Head":
-        pts = _triangle_points(cx, cy, 38)
-        shape = f'<polygon points="{pts}" {common}/>'
-        tx, ty = cx, cy + 8
-    elif name == "Ajna":
-        pts = _triangle_points(cx, cy, 36, inverted=True)
-        shape = f'<polygon points="{pts}" {common}/>'
-        tx, ty = cx, cy + 4
-    elif name in ("Throat", "Sacral", "Root"):
-        w, h = (76, 32) if name == "Throat" else (104, 52) if name == "Sacral" else (104, 42)
-        x, y = cx - w/2, cy - h/2
-        shape = f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="4" {common}/>'
-        tx, ty = cx, cy + 5
-    elif name == "G":
-        pts = _diamond_points(cx, cy, 62, 54)
-        shape = f'<polygon points="{pts}" {common}/>'
-        tx, ty = cx, cy + 5
-    elif name == "Heart":
-        pts = _triangle_points(cx, cy, 34)
-        shape = f'<polygon points="{pts}" {common}/>'
-        tx, ty = cx, cy + 6
-    elif name == "Solar Plexus":
-        pts = _triangle_points(cx, cy, 38)
-        shape = f'<polygon points="{pts}" {common}/>'
-        tx, ty = cx, cy + 8
-    elif name == "Spleen":
-        pts = _triangle_points(cx, cy, 40)
-        shape = f'<polygon points="{pts}" {common}/>'
-        tx, ty = cx, cy + 8
-    else:
-        return ""
-
-    txt = (f'<text x="{tx}" y="{ty}" text-anchor="middle" '
-           f'font-family="sans-serif" font-size="9" fill="{tc}" '
-           f'font-weight="600" letter-spacing="0.5">{label.upper()}</text>')
-    return shape + "\n  " + txt
-
-
-# ---------------------------------------------------------------------------
-# Gate number dots
-# ---------------------------------------------------------------------------
-def _gate_dot(x: float, y: float, gate: int,
-               in_personality: bool, in_design: bool) -> str:
-    if in_personality and in_design:
-        fill, tc = C_BOTH_GATE, C_TEXT_DEF
-    elif in_personality:
-        fill, tc = C_PERS_GATE, C_TEXT_DEF
-    else:
-        fill, tc = C_DES_GATE, C_TEXT_DEF
-
-    return (f'<circle cx="{x}" cy="{y}" r="8" fill="{fill}" opacity="0.9"/>'
-            f'<text x="{x}" y="{y+3.5}" text-anchor="middle" '
-            f'font-family="sans-serif" font-size="7" fill="{tc}" font-weight="700">'
-            f'{gate}</text>')
-
-
-# Gate positions around each center (offset from center_pos)
-_GATE_OFFSETS: Dict[str, List[Tuple[float, float]]] = {
-    "Head":         [(-18, -30), (0, -42), (18, -30)],          # 3 gates
-    "Ajna":         [(-28, 0), (-14, -20), (0, 28), (14, -20), (28, 0), (0, -28)],
-    "Throat":       [(-38, 0), (-24, 0), (-10, 0), (4, 0),
-                     (18, 0), (32, 0), (-32, 16), (-16, 16),
-                     (0, 16), (16, 16), (30, 16)],
-    "G":            [(-38, -16), (-22, -30), (0, -44), (22, -30),
-                     (38, -16), (38, 16), (0, 44), (-38, 16)],
-    "Heart":        [(-18, -30), (18, -30), (0, 28), (-18, 10)],
-    "Solar Plexus": [(-20, -30), (20, -30), (0, -44), (-24, 0), (24, 0), (0, 28), (-12, 14)],
-    "Sacral":       [(-46, 0), (-30, 0), (-14, 0), (0, 0),
-                     (14, 0), (28, 0), (-38, 20), (-24, 20),
-                     (0, -24)],
-    "Spleen":       [(-26, -26), (0, -38), (26, -26), (-32, 0), (32, 0), (0, 28), (-16, 14)],
-    "Root":         [(-46, 0), (-30, 0), (-14, 0), (2, 0),
-                     (16, 0), (30, 0), (-38, -20), (-22, -20),
-                     (4, -20)],
-}
-
-# Map center → ordered gate list for offset indexing
-_CENTER_GATE_ORDER: Dict[str, List[int]] = {
-    "Head":         [64, 61, 63],
-    "Ajna":         [47, 24,  4, 17, 11, 43],
-    "Throat":       [62, 23, 56, 35, 12, 45, 33,  8, 31, 20, 16],
-    "G":            [ 7,  1, 13, 10, 25, 15, 46,  2],
-    "Heart":        [21, 40, 26, 51],
-    "Solar Plexus": [36, 22, 37,  6, 49, 55, 30],
-    "Sacral":       [34,  5, 14, 29, 59,  9,  3, 42, 27],
-    "Spleen":       [48, 57, 44, 50, 32, 28, 18],
-    "Root":         [53, 60, 52, 19, 39, 41, 58, 38, 54],
-}
-
-
-def _gate_dots_for_center(
-    center_name: str,
-    p_gates: Set[int],
-    d_gates: Set[int],
-) -> str:
-    cx, cy = CENTER_POS[center_name]
-    gates   = _CENTER_GATE_ORDER[center_name]
-    offsets = _GATE_OFFSETS.get(center_name, [])
-    out = []
-    for i, gate in enumerate(gates):
-        in_p = gate in p_gates
-        in_d = gate in d_gates
-        if not (in_p or in_d):
-            continue
-        if i < len(offsets):
-            dx, dy = offsets[i]
-        else:
-            dx, dy = 0, 0
-        out.append(_gate_dot(cx + dx, cy + dy, gate, in_p, in_d))
-    return "\n  ".join(out)
-
-
-# ---------------------------------------------------------------------------
-# Channel lines
-# ---------------------------------------------------------------------------
-def _channel_lines(defined_channels: List[Tuple[int, int]]) -> str:
-    # Group defined channels by center-pair
-    defined_pairs: Set[Tuple[str, str]] = set()
-    for g1, g2 in defined_channels:
-        c1, c2 = GATE_TO_CENTER[g1], GATE_TO_CENTER[g2]
-        defined_pairs.add((min(c1, c2), max(c1, c2)))
-
-    # All possible center-pair connections
-    all_pairs: Set[Tuple[str, str]] = set()
+# ── Gate positions (computed from channel layout) ──────────────────────────────
+def _build_gate_positions() -> Dict[int, Tuple[float, float]]:
+    """
+    Place each gate ~25% along the channel line from its center.
+    For multiple channels between the same pair of centers, spread
+    the gates perpendicularly to avoid overlap.
+    """
+    # Group channels by center pair
+    pair_chans: Dict[Tuple[str,str], List[Tuple[int,int]]] = defaultdict(list)
     for g1, g2 in CHANNELS:
         c1, c2 = GATE_TO_CENTER[g1], GATE_TO_CENTER[g2]
-        all_pairs.add((min(c1, c2), max(c1, c2)))
+        key = (min(c1,c2), max(c1,c2))
+        pair_chans[key].append((g1, g2))
 
-    bg_lines  = []   # undefined channels — rendered first (bottom)
-    top_lines = []   # defined channels  — rendered last (top)
+    raw: Dict[int, List[Tuple[float,float]]] = defaultdict(list)
 
+    FRAC   = 0.24   # how far along the line to place each gate
+    SPREAD = 9      # px between parallel channels
+
+    for (cn1, cn2), chans in pair_chans.items():
+        x1, y1 = CENTER_POS[cn1]
+        x2, y2 = CENTER_POS[cn2]
+        dx, dy = x2 - x1, y2 - y1
+        length = (dx**2 + dy**2) ** 0.5
+        # perpendicular unit vector
+        px, py = (-dy / length, dx / length) if length else (1, 0)
+
+        n = len(chans)
+        for i, (g1, g2) in enumerate(chans):
+            offset = (i - (n - 1) / 2) * SPREAD
+            ox, oy = offset * px, offset * py
+            # gate g1 near center cn1, gate g2 near center cn2
+            raw[g1].append((x1 + FRAC*(x2-x1) + ox, y1 + FRAC*(y2-y1) + oy))
+            raw[g2].append((x2 + FRAC*(x1-x2) + ox, y2 + FRAC*(y1-y2) + oy))
+
+    return {
+        g: (sum(p[0] for p in pts) / len(pts),
+            sum(p[1] for p in pts) / len(pts))
+        for g, pts in raw.items()
+    }
+
+
+GATE_POSITIONS = _build_gate_positions()
+
+# ── Center shapes ─────────────────────────────────────────────────────────────
+def _tri(cx, cy, size, inv=False):
+    if not inv:
+        return f"{cx},{cy-size*0.7} {cx-size},{cy+size*0.3} {cx+size},{cy+size*0.3}"
+    return f"{cx-size},{cy-size*0.3} {cx+size},{cy-size*0.3} {cx},{cy+size*0.7}"
+
+def _diamond(cx, cy, hw, hh):
+    return f"{cx},{cy-hh} {cx+hw},{cy} {cx},{cy+hh} {cx-hw},{cy}"
+
+def _center_shape(name: str, defined: bool) -> str:
+    fill   = C_DEF_FILL   if defined else C_UNDEF_FILL
+    stroke = C_DEF_STROKE if defined else C_UNDEF_STR
+    sw     = 2.5 if defined else 1.5
+    tc     = C_GATE_ON_TX if defined else C_DEF_STROKE
+    lbl    = name if name != "Solar Plexus" else "SOL.PLEX."
+    cx, cy = CENTER_POS[name]
+    s = f'fill="{fill}" stroke="{stroke}" stroke-width="{sw}"'
+
+    if name == "Head":
+        return (f'<polygon points="{_tri(cx,cy,36)}" {s}/>'
+                f'<text x="{cx}" y="{cy+10}" text-anchor="middle" font-family="sans-serif" '
+                f'font-size="8" fill="{tc}" font-weight="600" letter-spacing="0.5">HEAD</text>')
+    elif name == "Ajna":
+        return (f'<polygon points="{_tri(cx,cy,34,inv=True)}" {s}/>'
+                f'<text x="{cx}" y="{cy+5}" text-anchor="middle" font-family="sans-serif" '
+                f'font-size="8" fill="{tc}" font-weight="600" letter-spacing="0.5">AJNA</text>')
+    elif name in ("Throat", "Sacral", "Root"):
+        w, h = (74,30) if name=="Throat" else (102,52) if name=="Sacral" else (102,40)
+        x,y = cx-w/2, cy-h/2
+        lbl_y = cy+5
+        return (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="3" {s}/>'
+                f'<text x="{cx}" y="{lbl_y}" text-anchor="middle" font-family="sans-serif" '
+                f'font-size="8" fill="{tc}" font-weight="600" letter-spacing="0.5">'
+                f'{name.upper()}</text>')
+    elif name == "G":
+        return (f'<polygon points="{_diamond(cx,cy,60,52)}" {s}/>'
+                f'<text x="{cx}" y="{cy+5}" text-anchor="middle" font-family="sans-serif" '
+                f'font-size="8" fill="{tc}" font-weight="600">G</text>')
+    elif name == "Heart":
+        return (f'<polygon points="{_tri(cx,cy,32)}" {s}/>'
+                f'<text x="{cx}" y="{cy+8}" text-anchor="middle" font-family="sans-serif" '
+                f'font-size="7" fill="{tc}" font-weight="600">HEART</text>')
+    elif name == "Solar Plexus":
+        return (f'<polygon points="{_tri(cx,cy,36)}" {s}/>'
+                f'<text x="{cx}" y="{cy+10}" text-anchor="middle" font-family="sans-serif" '
+                f'font-size="6" fill="{tc}" font-weight="600">SOL.PLEX.</text>')
+    elif name == "Spleen":
+        return (f'<polygon points="{_tri(cx,cy,38)}" {s}/>'
+                f'<text x="{cx}" y="{cy+10}" text-anchor="middle" font-family="sans-serif" '
+                f'font-size="7" fill="{tc}" font-weight="600">SPLEEN</text>')
+    return ""
+
+# ── Channel lines ─────────────────────────────────────────────────────────────
+def _channel_lines(defined_channels: List[Tuple[int,int]]) -> str:
+    def_pairs: Set[Tuple[str,str]] = set()
+    for g1, g2 in defined_channels:
+        c1, c2 = GATE_TO_CENTER[g1], GATE_TO_CENTER[g2]
+        def_pairs.add((min(c1,c2), max(c1,c2)))
+
+    all_pairs: Set[Tuple[str,str]] = set()
+    for g1, g2 in CHANNELS:
+        c1, c2 = GATE_TO_CENTER[g1], GATE_TO_CENTER[g2]
+        all_pairs.add((min(c1,c2), max(c1,c2)))
+
+    bg, top = [], []
     for pair in all_pairs:
-        x1, y1 = CENTER_POS[pair[0]]
-        x2, y2 = CENTER_POS[pair[1]]
-        is_def  = pair in defined_pairs
-        color   = C_CHANNEL_DEF  if is_def else C_CHANNEL_UNDEF
-        width   = "3.5"          if is_def else "1.5"
-        opacity = "1"            if is_def else "0.7"
-        el = (f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" '
-              f'stroke="{color}" stroke-width="{width}" opacity="{opacity}" '
-              f'stroke-linecap="round"/>')
-        (top_lines if is_def else bg_lines).append(el)
+        x1,y1 = CENTER_POS[pair[0]]; x2,y2 = CENTER_POS[pair[1]]
+        is_def = pair in def_pairs
+        col  = C_CHAN_DEF  if is_def else C_CHAN_UNDEF
+        w    = "3" if is_def else "1.2"
+        op   = "1" if is_def else "0.6"
+        el   = (f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" '
+                f'stroke="{col}" stroke-width="{w}" opacity="{op}" stroke-linecap="round"/>')
+        (top if is_def else bg).append(el)
+    return "\n  ".join(bg + top)
 
-    return "\n  ".join(bg_lines + top_lines)
+# ── Gate circles (ALL 64) ─────────────────────────────────────────────────────
+def _all_gate_circles(p_gates: Set[int], d_gates: Set[int]) -> str:
+    elements = []
+    for gate, (gx, gy) in sorted(GATE_POSITIONS.items()):
+        in_p = gate in p_gates
+        in_d = gate in d_gates
+        active = in_p or in_d
 
+        if in_p and in_d:
+            fill, tc, sc = C_GATE_BOTH, C_GATE_ON_TX, C_DEF_STROKE
+        elif in_p:
+            fill, tc, sc = C_GATE_P, C_GATE_ON_TX, C_DEF_STROKE
+        elif in_d:
+            fill, tc, sc = C_GATE_D, C_GATE_ON_TX, C_DEF_STROKE
+        else:
+            fill, tc, sc = C_GATE_OFF, C_GATE_OFF_TX, C_UNDEF_STR
 
-# ---------------------------------------------------------------------------
-# Main entry point
-# ---------------------------------------------------------------------------
+        r   = "8"   if active else "7"
+        sw  = "1.2" if active else "0.7"
+        fw  = "700" if active else "500"
+        fs  = "7"   if active else "6.5"
 
+        elements.append(
+            f'<circle cx="{gx:.1f}" cy="{gy:.1f}" r="{r}" '
+            f'fill="{fill}" stroke="{sc}" stroke-width="{sw}"/>'
+            f'<text x="{gx:.1f}" y="{gy+2.5:.1f}" text-anchor="middle" '
+            f'font-family="sans-serif" font-size="{fs}" fill="{tc}" '
+            f'font-weight="{fw}">{gate}</text>'
+        )
+    return "\n  ".join(elements)
+
+# ── Legend ────────────────────────────────────────────────────────────────────
+def _legend(height: int) -> str:
+    y = height - 52
+    return f"""
+  <g transform="translate(8,{y})">
+    <circle cx="8" cy="8" r="6" fill="{C_GATE_P}"/>
+    <text x="18" y="12" font-family="sans-serif" font-size="8" fill="#7D5A44">Personalidade</text>
+    <circle cx="8" cy="24" r="6" fill="{C_GATE_D}"/>
+    <text x="18" y="28" font-family="sans-serif" font-size="8" fill="#7D5A44">Design</text>
+    <circle cx="8" cy="40" r="6" fill="{C_GATE_BOTH}"/>
+    <text x="18" y="44" font-family="sans-serif" font-size="8" fill="#7D5A44">Ambos</text>
+  </g>"""
+
+# ── Main entry point ──────────────────────────────────────────────────────────
 def generate_body_graph_svg(
-    defined_centers: Set[str],
-    defined_channels: List[Tuple[int, int]],
+    defined_centers:   Set[str],
+    defined_channels:  List[Tuple[int,int]],
     personality_gates: Set[int],
-    design_gates: Set[int],
-    width: int = 400,
+    design_gates:      Set[int],
+    width: int = 420,
     height: int = 560,
 ) -> str:
+    channels_svg = _channel_lines(defined_channels)
     centers_svg  = "\n  ".join(
         _center_shape(name, name in defined_centers)
         for name in CENTER_POS
     )
-    channels_svg = _channel_lines(defined_channels)
-    gate_dots    = "\n  ".join(
-        _gate_dots_for_center(name, personality_gates, design_gates)
-        for name in CENTER_POS
-    )
+    gates_svg = _all_gate_circles(personality_gates, design_gates)
+    legend    = _legend(height)
 
-    # Legend
-    legend = f"""
-  <g transform="translate(8, {height - 52})">
-    <circle cx="8" cy="8" r="6" fill="{C_PERS_GATE}"/>
-    <text x="18" y="12" font-family="sans-serif" font-size="8" fill="#7D5A44">Personality</text>
-    <circle cx="8" cy="24" r="6" fill="{C_DES_GATE}"/>
-    <text x="18" y="28" font-family="sans-serif" font-size="8" fill="#7D5A44">Design</text>
-    <circle cx="8" cy="40" r="6" fill="{C_BOTH_GATE}"/>
-    <text x="18" y="44" font-family="sans-serif" font-size="8" fill="#7D5A44">Both</text>
-  </g>"""
-
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="{width}" height="{height}">
-  <rect width="{width}" height="{height}" fill="{C_BG}"/>
-  <!-- Channel lines (background then defined) -->
-  {channels_svg}
-  <!-- Center shapes -->
-  {centers_svg}
-  <!-- Active gate dots -->
-  {gate_dots}
-  {legend}
-</svg>"""
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" '
+            f'viewBox="0 0 {width} {height}" width="{width}" height="{height}">\n'
+            f'  <rect width="{width}" height="{height}" fill="{C_BG}"/>\n'
+            f'  <!-- Channel lines -->\n  {channels_svg}\n'
+            f'  <!-- Centers -->\n  {centers_svg}\n'
+            f'  <!-- All 64 gates -->\n  {gates_svg}\n'
+            f'  {legend}\n'
+            f'</svg>')

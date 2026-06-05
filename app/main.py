@@ -92,6 +92,12 @@ class ChartResponse(BaseModel):
     perspective: str
     environment: str
 
+    # Profile arrows [line, color] for each position
+    p_sun_arrow:   list[int]
+    p_earth_arrow: list[int]
+    d_sun_arrow:   list[int]
+    d_earth_arrow: list[int]
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -217,4 +223,8 @@ async def calculate(req: ChartRequest):
         motivation=chart.motivation,
         perspective=chart.perspective,
         environment=chart.environment,
+        p_sun_arrow=list(chart.p_sun_line_color),
+        p_earth_arrow=list(chart.p_earth_line_color),
+        d_sun_arrow=list(chart.d_sun_line_color),
+        d_earth_arrow=list(chart.d_earth_line_color),
     )
