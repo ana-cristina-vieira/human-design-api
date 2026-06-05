@@ -409,10 +409,10 @@
           <input type="number" id="birth_day" name="birth_day" min="1" max="31" placeholder="1" required/>
         </div>
         <div>
-          <label>Hora de nascimento</label>
+          <label>Hora de nascimento <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--terracota)">(formato 24h — ex: 21 para 9pm)</span></label>
           <div class="time-row">
-            <input type="number" id="birth_hour"   name="birth_hour"   min="0" max="23" placeholder="HH" required/>
-            <input type="number" id="birth_minute" name="birth_minute" min="0" max="59" placeholder="MM" required/>
+            <input type="number" id="birth_hour"   name="birth_hour"   min="0" max="23" placeholder="0–23" required/>
+            <input type="number" id="birth_minute" name="birth_minute" min="0" max="59" placeholder="0–59" required/>
           </div>
         </div>
         <div class="full">
