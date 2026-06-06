@@ -34,56 +34,58 @@ CENTER_POS: Dict[str, Tuple[float, float]] = {
 }
 
 # ── Gate layouts inside each center (gate, rel_x, rel_y) ──────────────────────
+# Gates spread toward the EDGES of each center shape, matching original HD charts.
+# Spacing ~18px centre-to-centre to fill the shape width.
 _GATE_LAYOUT: Dict[str, List[Tuple[int, float, float]]] = {
-    # HEAD triangle (3 gates, single row)
+    # HEAD triangle — 3 gates in a row near the base
     "Head": [
-        (64,-18, 2), (61, 0, 2), (63,18, 2),
+        (64,-18, 8), (61, 0, 8), (63,18, 8),
     ],
-    # AJNA inv-triangle (6 gates, 2 rows of 3)
+    # AJNA — 6 gates, 2 rows spanning the full width
     "Ajna": [
-        (47,-18,-9),(24, 0,-9),(4, 18,-9),
-        (17,-18, 9),(11, 0, 9),(43,18, 9),
+        (47,-18,-10),(24, 0,-10),(4, 18,-10),
+        (17,-18, 10),(11, 0, 10),(43,18, 10),
     ],
-    # THROAT — square 70×70, 11 gates: rows 4+4+3
+    # THROAT square — 11 gates, 3 rows 4+4+3, spread to ±27px
     "Throat": [
-        (62,-25,-16),(23,-9,-16),(56, 9,-16),(35,25,-16),
-        (12,-25,  0),(45,-9,  0),(33, 9,  0),( 8,25,  0),
-        (31,-17, 16),(20, 0, 16),(16,17, 16),
+        (62,-27,-19),(23,-9,-19),(56, 9,-19),(35,27,-19),
+        (12,-27,  0),(45,-9,  0),(33, 9,  0),( 8,27,  0),
+        (31,-18, 19),(20, 0, 19),(16,18, 19),
     ],
-    # G diamond (8 gates, 3 rows: 3+3+2)
+    # G diamond — 8 gates in 3 rows, spread ±22px
     "G": [
-        ( 7,-18,-18),(1, 0,-18),(13,18,-18),
-        (10,-18,  0),(25, 0,  0),(15,18,  0),
-        (46, -9, 18),(2,  9, 18),
+        ( 7,-22,-20),(1, 0,-20),(13,22,-20),
+        (10,-22,  0),(25, 0,  0),(15,22,  0),
+        (46,-11, 20),(2, 11, 20),
     ],
-    # HEART triangle (4 gates, 2×2)
+    # HEART triangle — 4 gates 2×2, spread ±16px
     "Heart": [
-        (21,-14,-8),(40,14,-8),
-        (26,-14, 8),(51,14, 8),
+        (21,-16,-9),(40,16,-9),
+        (26,-16, 9),(51,16,  9),
     ],
-    # SOLAR PLEXUS triangle (7 gates: 3+2+2)
+    # SOLAR PLEXUS — 7 gates 3+2+2, spread ±20px
     "Solar Plexus": [
-        (36,-18,-14),(22, 0,-14),(37,18,-14),
-        ( 6,-9,   0),(49, 9,  0),
-        (55,-9,  14),(30, 9, 14),
+        (36,-20,-14),(22, 0,-14),(37,20,-14),
+        ( 6,-10,  0),(49,10,  0),
+        (55,-10, 14),(30,10, 14),
     ],
-    # SACRAL — square 76×76, 9 gates: 3×3
+    # SACRAL square — 9 gates 3×3, spread ±26px
     "Sacral": [
-        (34,-22,-18),(5,  0,-18),(14,22,-18),
-        (29,-22,  0),(59, 0,  0),( 9,22,  0),
-        ( 3,-22, 18),(42, 0, 18),(27,22, 18),
+        (34,-26,-24),(5,  0,-24),(14,26,-24),
+        (29,-26,  0),(59, 0,  0),( 9,26,  0),
+        ( 3,-26, 24),(42, 0, 24),(27,26, 24),
     ],
-    # SPLEEN triangle (7 gates: 3+2+2)
+    # SPLEEN triangle — 7 gates 3+2+2, spread ±20px
     "Spleen": [
-        (48,-18,-14),(57, 0,-14),(44,18,-14),
-        (50,-9,   0),(32, 9,  0),
-        (28,-9,  14),(18, 9, 14),
+        (48,-20,-16),(57, 0,-16),(44,20,-16),
+        (50,-10,  0),(32,10,  0),
+        (28,-10, 16),(18,10, 16),
     ],
-    # ROOT — square 70×70, 9 gates: 3×3
+    # ROOT square — 9 gates 3×3, spread ±24px
     "Root": [
-        (53,-22,-16),(60, 0,-16),(52,22,-16),
-        (19,-22,  0),(39, 0,  0),(41,22,  0),
-        (58,-22, 16),(38, 0, 16),(54,22, 16),
+        (53,-24,-18),(60, 0,-18),(52,24,-18),
+        (19,-24,  0),(39, 0,  0),(41,24,  0),
+        (58,-24, 18),(38, 0, 18),(54,24, 18),
     ],
 }
 
@@ -178,15 +180,16 @@ def _center_gates(name: str, p_gates: Set[int], d_gates: Set[int]) -> str:
         fill   = C_GATE_ON  if active else C_GATE_OFF
         tc     = C_GATE_ON_T if active else C_GATE_OFF_T
         sc     = C_GATE_STR  if active else C_GATE_OSTR
-        sw     = "1.2" if active else "0.8"
+        sw     = "1.5" if active else "0.8"
         fw     = "700" if active else "400"
-        fs     = "7"   if active else "6.5"
-        sz     = 15    # gate square size
+        r      = "8"   if active else "7.5"
+        fs     = "6.5"
 
+        # Gate = circle (matching original HD charts)
         elems.append(
-            f'<rect x="{gx-sz/2:.1f}" y="{gy-sz/2:.1f}" width="{sz}" height="{sz}" '
-            f'rx="3" fill="{fill}" stroke="{sc}" stroke-width="{sw}"/>'
-            f'<text x="{gx:.1f}" y="{gy+3:.1f}" text-anchor="middle" '
+            f'<circle cx="{gx:.1f}" cy="{gy:.1f}" r="{r}" '
+            f'fill="{fill}" stroke="{sc}" stroke-width="{sw}"/>'
+            f'<text x="{gx:.1f}" y="{gy+2.5:.1f}" text-anchor="middle" '
             f'font-family="sans-serif" font-size="{fs}" fill="{tc}" '
             f'font-weight="{fw}">{gate}</text>'
         )
@@ -210,8 +213,8 @@ def _channel_lines(defined_channels: List[Tuple[int,int]]) -> str:
         x2, y2 = CENTER_POS[pair[1]]
         is_def  = pair in def_pairs
         col = C_CHAN_DEF   if is_def else C_CHAN_UNDEF
-        w   = "8"          if is_def else "2.5"
-        op  = "1"          if is_def else "0.7"
+        w   = "10"         if is_def else "2"
+        op  = "1"          if is_def else "0.5"
         el  = (f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" '
                f'stroke="{col}" stroke-width="{w}" opacity="{op}" stroke-linecap="round"/>')
         (top if is_def else bg).append(el)
