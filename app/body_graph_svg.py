@@ -255,17 +255,15 @@ def _channel_lines(defined_channels: List[Tuple[int,int]],
         g2_on   = g2 in active_gates
 
         if is_def:
-            top.append(line(x1, y1, x2, y2, C_CHAN_DEF, "10", "1"))
+            top.append(line(x1, y1, x2, y2, C_CHAN_DEF, "7", "0.6"))
         elif g1_on or g2_on:
-            # Undeclared background
-            bg.append(line(x1, y1, x2, y2, C_CHAN_UNDEF, "2", "0.5"))
-            # Half-channel stub from active gate to midpoint
+            bg.append(line(x1, y1, x2, y2, C_CHAN_UNDEF, "1.5", "0.25"))
             if g1_on:
-                mid.append(line(x1, y1, mx, my, C_CHAN_DEF, "6", "0.75"))
+                mid.append(line(x1, y1, mx, my, C_CHAN_DEF, "5", "0.5"))
             if g2_on:
-                mid.append(line(mx, my, x2, y2, C_CHAN_DEF, "6", "0.75"))
+                mid.append(line(mx, my, x2, y2, C_CHAN_DEF, "5", "0.5"))
         else:
-            bg.append(line(x1, y1, x2, y2, C_CHAN_UNDEF, "2", "0.5"))
+            bg.append(line(x1, y1, x2, y2, C_CHAN_UNDEF, "1.5", "0.25"))
 
     return "\n  ".join(bg + mid + top)
 
