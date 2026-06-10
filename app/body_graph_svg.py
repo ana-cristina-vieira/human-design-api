@@ -27,9 +27,9 @@ CENTER_POS: Dict[str, Tuple[float, float]] = {
     "Throat":       (220, 215),
     "G":            (220, 305),
     "Heart":        (326, 262),
-    "Solar Plexus": (328, 378),
+    "Solar Plexus": (328, 360),
     "Sacral":       (220, 398),
-    "Spleen":       ( 90, 332),
+    "Spleen":       ( 90, 360),
     "Root":         (220, 480),
 }
 
@@ -44,7 +44,7 @@ _GATE_LAYOUT: Dict[str, List[Tuple[int, float, float]]] = {
     # AJNA — top 3 connect UP to Head, bottom 3 connect DOWN to Throat
     "Ajna": [
         (47, -18, -12), (24,   0, -12), ( 4, +18, -12),
-        (17, -12, +22), (11,   0, +26), (43, +12, +22),
+        (17, -12, +22), (43,   0, +26), (11, +12, +22),
     ],
     # THROAT — gates grouped by connecting direction
     # top  → Ajna,  left → Spleen,  right → Heart/SP,  bottom → G
@@ -52,7 +52,7 @@ _GATE_LAYOUT: Dict[str, List[Tuple[int, float, float]]] = {
         (62, -20, -25), (23,   0, -25), (56, +20, -25),   # top
         (16, -27,  +8),                                    # left
         (45, +27, -12), (35, +27,  +4), (12, +27, +16),   # right
-        (20, -24, +25), ( 8,  -8, +25), (31,  +8, +25), (33, +24, +25),  # bottom
+        (20, -24, +25), (31,  -8, +25), ( 8,  +8, +25), (33, +24, +25),  # bottom
     ],
     # G — top → Throat, left → Spleen (integration), right → Heart, bottom → Sacral
     "G": [
@@ -62,30 +62,31 @@ _GATE_LAYOUT: Dict[str, List[Tuple[int, float, float]]] = {
         (15, -20, +18), ( 2,   0, +24), (46, +20, +18),
     ],
     # HEART — gates face Throat (upper-left), Spleen (left), G (lower-left), SP (bottom)
+    # Larger triangle (hw=36,hh=32) gives room to spread 4 gates
     "Heart": [
-        (21, -14,  -8),
-        (26, -14,  +4),
-        (51,  -4, +10),
-        (40,  +8, +10),
+        (21, -10, -16),   # upper → Throat (21-45)
+        (26, -20,  +2),   # left  → Spleen (26-44)
+        (51,  -6, +14),   # lower-left → G (25-51)
+        (40, +14, +14),   # lower-right → Solar Plexus (37-40)
     ],
     # SOLAR PLEXUS — top → Heart/Throat, left → Sacral, bottom → Root
     "Solar Plexus": [
         (37,  +8, -14), (36,  -4, -16), (22, -12, -10),
         ( 6, -16,  +4),
-        (49, -10, +12), (55,   0, +12), (30, +10, +12),
+        (49, -10, +11), (55,   0, +11), (30, +10, +11),
     ],
     # SACRAL — top → G, right → SP, left → Spleen, bottom → Root
     "Sacral": [
         (34, -24, -24), ( 5,  -8, -28), (14,  +8, -28), (29, +24, -24),
         (59, +28,   0),
         (27, -28,  -8),
-        ( 9, -18, +28), ( 3,   0, +28), (42, +18, +28),
+        (42, -18, +28), ( 3,   0, +28), ( 9, +18, +28),
     ],
     # SPLEEN — all gates connect RIGHT (all other centers are to the right)
     # sorted top→bottom by target center height
     "Spleen": [
         (48,  +6, -24),
-        (44, +18, -12),
+        (44, +16, -12),   # was +18; adjusted to stay inside triangle at y=360
         (57, +22,  -2),
         (50, +22,  +8),
         (32, +18, +14),
@@ -165,7 +166,7 @@ def _center_shape(name: str, defined: bool) -> str:
         path = _diamond_path(cx, cy, 70, 58, r=10)
         return f'<path d="{path}" {s}/>'
     elif name == "Heart":
-        path = _rtri_path(_tri_verts(cx, cy, 32, 28), r=10)
+        path = _rtri_path(_tri_verts(cx, cy, 36, 32), r=10)
         return f'<path d="{path}" {s}/>'
     elif name == "Solar Plexus":
         path = _rtri_path(_tri_verts(cx, cy, 34, 30), r=10)
