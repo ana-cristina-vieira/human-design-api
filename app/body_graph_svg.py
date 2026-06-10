@@ -82,12 +82,21 @@ _GATE_LAYOUT: Dict[str, List[Tuple[int, float, float]]] = {
         (55,  -7, +17),  # mid → Root 39
         (30,  +8, +27),  # near base → Root 41
     ],
-    # SACRAL — top → G, right → SP, left → Spleen, bottom → Root
+    # SACRAL — top (5,14,29) | right (59) | left top→bot (34,27) | bottom (42,3,9)
     "Sacral": [
-        (34, -24, -24), ( 5,  -8, -28), (14,  +8, -28), (29, +24, -24),
+        # Top row (left → right): connects to G bottom
+        ( 5, -18, -28),  # → G 15
+        (14,   0, -28),  # → G 2
+        (29, +18, -28),  # → G 46
+        # Right: connects to Solar Plexus
         (59, +28,   0),
-        (27, -28,  -8),
-        (42, -18, +28), ( 3,   0, +28), ( 9, +18, +28),
+        # Left (top → bottom): integration circuit + Spleen
+        (34, -28, -12),  # → Throat 20 / Spleen 57
+        (27, -28, +10),  # → Spleen 50
+        # Bottom row (left → right): connects to Root top
+        (42, -18, +28),  # → Root 53
+        ( 3,   0, +28),  # → Root 60
+        ( 9, +18, +28),  # → Root 52
     ],
     # SPLEEN — right-pointing triangle: 3 gates on upper diagonal, 1 at tip, 3 on lower diagonal
     "Spleen": [
