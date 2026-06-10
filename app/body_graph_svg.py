@@ -54,12 +54,16 @@ _GATE_LAYOUT: Dict[str, List[Tuple[int, float, float]]] = {
         (35, +27, -12), (12, +27,  +4), (45, +27, +16),   # right (direita → PS/Ego)
         (31, -20, +25), ( 8,   0, +25), (33, +20, +25),   # bottom (base → G)
     ],
-    # G — top → Throat, left → Spleen (integration), right → Heart, bottom → Sacral
+    # G — vértices: 1(topo), 10(esq), 25(dir), 2(base); diagonais: 7,13,15,46
     "G": [
-        ( 7, -20, -18), ( 1,   0, -24), (13, +20, -18),
-        (10, -24,   0),
-        (25, +24,   0),
-        (15, -20, +18), ( 2,   0, +24), (46, +20, +18),
+        ( 1,   0, -46),  # vértice topo → Throat (1-8)
+        ( 7, -24, -20),  # diagonal sup-esq → Throat (7-31)
+        (13, +24, -20),  # diagonal sup-dir → Throat (13-33)
+        (10, -58,   0),  # vértice esquerdo → Throat (10-20)
+        (25, +58,   0),  # vértice direito → Heart (25-51)
+        (15, -24, +20),  # diagonal inf-esq → Sacral (5-15)
+        ( 2,   0, +46),  # vértice base → Sacral (2-14)
+        (46, +24, +20),  # diagonal inf-dir → Sacral (29-46)
     ],
     # HEART — gates face Throat (upper-left), Spleen (left), G (lower-left), SP (bottom)
     # Larger triangle (hw=36,hh=32) gives room to spread 4 gates
