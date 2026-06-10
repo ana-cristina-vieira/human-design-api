@@ -91,9 +91,9 @@ _GATE_LAYOUT: Dict[str, List[Tuple[int, float, float]]] = {
         # Right tip → Sacral
         (50, +36,   0),
         # Lower diagonal (right tip → lower-left): connects to Root below-right
-        (18, +22,  +7),  # near tip → Root 58
+        (32, +22,  +7),  # near tip → Root 54
         (28,  +7, +17),  # mid  → Root 38
-        (32,  -8, +27),  # bottom → Root 54
+        (18,  -8, +27),  # bottom → Root 58
     ],
     # ROOT — top → Sacral, left → Spleen, right → Solar Plexus
     "Root": [
