@@ -47,12 +47,12 @@ _GATE_LAYOUT: Dict[str, List[Tuple[int, float, float]]] = {
         (17, -12, +22), (43,   0, +26), (11, +12, +22),
     ],
     # THROAT — gates grouped by connecting direction
-    # top  → Ajna,  left → Spleen,  right → Heart/SP,  bottom → G
+    # top  → Ajna,  left → Spleen/G,  right → SP/Heart,  bottom → G
     "Throat": [
-        (62, -20, -25), (23,   0, -25), (56, +20, -25),   # top
-        (16, -27,  +8),                                    # left
-        (45, +27, -12), (35, +27,  +4), (12, +27, +16),   # right
-        (20, -24, +25), (31,  -8, +25), ( 8,  +8, +25), (33, +24, +25),  # bottom
+        (62, -20, -25), (23,   0, -25), (56, +20, -25),   # top (topo → Ajna)
+        (16, -27,  -6), (20, -27, +10),                   # left (esquerda → Baço/G)
+        (35, +27, -12), (12, +27,  +4), (45, +27, +16),   # right (direita → PS/Ego)
+        (31, -20, +25), ( 8,   0, +25), (33, +20, +25),   # bottom (base → G)
     ],
     # G — top → Throat, left → Spleen (integration), right → Heart, bottom → Sacral
     "G": [
