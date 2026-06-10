@@ -82,16 +82,18 @@ _GATE_LAYOUT: Dict[str, List[Tuple[int, float, float]]] = {
         (27, -28,  -8),
         (42, -18, +28), ( 3,   0, +28), ( 9, +18, +28),
     ],
-    # SPLEEN — all gates connect RIGHT (all other centers are to the right)
-    # sorted top→bottom by target center height
+    # SPLEEN — right-pointing triangle: 3 gates on upper diagonal, 1 at tip, 3 on lower diagonal
     "Spleen": [
-        (48,  +6, -24),
-        (44, +16, -12),   # was +18; adjusted to stay inside triangle at y=360
-        (57, +22,  -2),
-        (50, +22,  +8),
-        (32, +18, +14),
-        (28, +10, +12),
-        (18, +14, +10),
+        # Upper diagonal (upper-left → right tip): connects to Throat/G/Heart above-right
+        (48,  -8, -27),  # top  → Throat 16
+        (57,  +7, -17),  # mid  → Throat 20 / G 10
+        (44, +22,  -7),  # near tip → Heart 26
+        # Right tip → Sacral
+        (50, +36,   0),
+        # Lower diagonal (right tip → lower-left): connects to Root below-right
+        (18, +22,  +7),  # near tip → Root 58
+        (28,  +7, +17),  # mid  → Root 38
+        (32,  -8, +27),  # bottom → Root 54
     ],
     # ROOT — top → Sacral, left → Spleen, right → Solar Plexus
     "Root": [
@@ -175,7 +177,9 @@ def _center_shape(name: str, defined: bool) -> str:
         sz = 74
         return f'<rect x="{cx-sz/2}" y="{cy-sz/2}" width="{sz}" height="{sz}" rx="6" {s}/>'
     elif name == "Spleen":
-        path = _rtri_path(_tri_verts(cx, cy, 38, 34), r=10)
+        # Right-pointing triangle: vertical base on left, tip pointing right
+        verts = [(cx-24, cy-40), (cx-24, cy+40), (cx+38, cy)]
+        path = _rtri_path(verts, r=10)
         return f'<path d="{path}" {s}/>'
     elif name == "Root":
         sz = 68
