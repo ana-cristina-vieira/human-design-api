@@ -69,11 +69,18 @@ _GATE_LAYOUT: Dict[str, List[Tuple[int, float, float]]] = {
         (51,  -6, +14),   # lower-left → G (25-51)
         (40, +14, +14),   # lower-right → Solar Plexus (37-40)
     ],
-    # SOLAR PLEXUS — top → Heart/Throat, left → Sacral, bottom → Root
+    # SOLAR PLEXUS — left-pointing triangle: 3 gates on upper diagonal, 1 at left tip, 3 on lower diagonal
     "Solar Plexus": [
-        (37,  +8, -14), (36,  -4, -16), (22, -12, -10),
-        ( 6, -16,  +4),
-        (49, -10, +11), (55,   0, +11), (30, +10, +11),
+        # Upper diagonal (upper-right base → left tip): connects to Throat/Heart above-left
+        (36,  +8, -27),  # near base → Throat 35
+        (22,  -7, -17),  # mid → Throat 12
+        (37, -22,  -7),  # near tip → Heart 40
+        # Left tip → Sacral (directly left)
+        ( 6, -36,   0),  # tip → Sacral 59
+        # Lower diagonal (left tip → lower-right base): connects to Root below-left
+        (49, -22,  +7),  # near tip → Root 19
+        (55,  -7, +17),  # mid → Root 39
+        (30,  +8, +27),  # near base → Root 41
     ],
     # SACRAL — top → G, right → SP, left → Spleen, bottom → Root
     "Sacral": [
@@ -171,7 +178,9 @@ def _center_shape(name: str, defined: bool) -> str:
         path = _rtri_path(_tri_verts(cx, cy, 36, 32), r=10)
         return f'<path d="{path}" {s}/>'
     elif name == "Solar Plexus":
-        path = _rtri_path(_tri_verts(cx, cy, 34, 30), r=10)
+        # Left-pointing triangle: vertical base on right, tip pointing left
+        verts = [(cx+24, cy-40), (cx+24, cy+40), (cx-38, cy)]
+        path = _rtri_path(verts, r=10)
         return f'<path d="{path}" {s}/>'
     elif name == "Sacral":
         sz = 74
