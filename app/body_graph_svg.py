@@ -102,10 +102,10 @@ _GATE_LAYOUT: Dict[str, List[Tuple[int, float, float]]] = {
         (28,  +7, +17),  # mid  → Root 38
         (18,  -8, +27),  # bottom → Root 58
     ],
-    # ROOT — top → Sacral, left → Spleen, right → Solar Plexus
+    # ROOT — top: 53,60,52 | left (top→bottom): 54,38,58 | right (top→bottom): 19,39,41
     "Root": [
         (53, -18, -25), (60,   0, -25), (52, +18, -25),
-        (58, -25, -14), (38, -25,   0), (54, -25, +14),
+        (54, -25, -14), (38, -25,   0), (58, -25, +14),
         (19, +25, -14), (39, +25,   0), (41, +25, +14),
     ],
 }
@@ -221,24 +221,40 @@ def _center_gates(name: str, p_gates: Set[int], d_gates: Set[int]) -> str:
 
 
 # ── Channel lines — drawn gate-to-gate ────────────────────────────────────────
-def _channel_lines(defined_channels: List[Tuple[int,int]]) -> str:
+def _channel_lines(defined_channels: List[Tuple[int,int]],
+                   active_gates: Set[int]) -> str:
     def_pairs: Set[Tuple[int,int]] = set()
     for g1, g2 in defined_channels:
         def_pairs.add((min(g1,g2), max(g1,g2)))
 
-    bg, top = [], []
+    def line(x1, y1, x2, y2, col, w, op):
+        return (f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+                f'stroke="{col}" stroke-width="{w}" opacity="{op}" stroke-linecap="round"/>')
+
+    bg, mid, top = [], [], []
     for g1, g2 in CHANNELS:
         key = (min(g1,g2), max(g1,g2))
         x1, y1 = _GATE_POS[g1]
         x2, y2 = _GATE_POS[g2]
-        is_def = key in def_pairs
-        col = C_CHAN_DEF   if is_def else C_CHAN_UNDEF
-        w   = "10"         if is_def else "2"
-        op  = "1"          if is_def else "0.5"
-        el  = (f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
-               f'stroke="{col}" stroke-width="{w}" opacity="{op}" stroke-linecap="round"/>')
-        (top if is_def else bg).append(el)
-    return "\n  ".join(bg + top)
+        mx, my = (x1+x2)/2, (y1+y2)/2
+        is_def  = key in def_pairs
+        g1_on   = g1 in active_gates
+        g2_on   = g2 in active_gates
+
+        if is_def:
+            top.append(line(x1, y1, x2, y2, C_CHAN_DEF, "10", "1"))
+        elif g1_on or g2_on:
+            # Undeclared background
+            bg.append(line(x1, y1, x2, y2, C_CHAN_UNDEF, "2", "0.5"))
+            # Half-channel stub from active gate to midpoint
+            if g1_on:
+                mid.append(line(x1, y1, mx, my, C_CHAN_DEF, "6", "0.75"))
+            if g2_on:
+                mid.append(line(mx, my, x2, y2, C_CHAN_DEF, "6", "0.75"))
+        else:
+            bg.append(line(x1, y1, x2, y2, C_CHAN_UNDEF, "2", "0.5"))
+
+    return "\n  ".join(bg + mid + top)
 
 
 # ── Legend ─────────────────────────────────────────────────────────────────────
@@ -266,7 +282,8 @@ def generate_body_graph_svg(
     width:  int = 430,
     height: int = 565,
 ) -> str:
-    channels = _channel_lines(defined_channels)
+    active_gates = personality_gates | design_gates
+    channels = _channel_lines(defined_channels, active_gates)
     centers  = "\n  ".join(_center_shape(n, n in defined_centers) for n in CENTER_POS)
     gates    = "\n  ".join(_center_gates(n, personality_gates, design_gates) for n in CENTER_POS)
     legend   = _legend(height)
